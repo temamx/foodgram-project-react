@@ -4,6 +4,12 @@ from django.contrib import admin
 from recipes.models import (Favorite, Ingredient, Recipe,
                             AmountOfIngridients, Cart, Tag)
 
+@admin.register(Favorite)
+class FavoriteAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'user', 'recipe')
+    search_fields = ('user', 'recipe')
+    empty_value_display = settings.EMPTY_VALUE
+
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
@@ -37,6 +43,13 @@ class RecipeAdmin(admin.ModelAdmin):
 
     def favorites_amount(self, obj):
         return obj.favorites.count()
+    
+
+@admin.register(Cart)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'user', 'recipe')
+    search_fields = ('user', 'recipe')
+    empty_value_display = settings.EMPTY_VALUE
 
 
 @admin.register(AmountOfIngridients)
