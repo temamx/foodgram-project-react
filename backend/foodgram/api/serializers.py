@@ -1,7 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.db import transaction
 from django.forms import CharField, EmailField
-from drf_extra_fields.fields import Base64ImageField
+from utils import Base64ImageField
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
