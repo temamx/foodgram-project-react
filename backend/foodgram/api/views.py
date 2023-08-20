@@ -11,8 +11,10 @@ from djoser.views import UserViewSet
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReadOnly
-from api.serializers import (CartSerializer, FavoriteSerializer, FollowSerializer, IngredientSerializer,
-                             ReadRecipeSerializer, ResponseSubscribeSerializer,
+from api.serializers import (CartSerializer, FavoriteSerializer,
+                             FollowSerializer, IngredientSerializer,
+                             ReadRecipeSerializer,
+                             ResponseSubscribeSerializer,
                              TagSerializer
                              )
 from api.utils import post, delete
@@ -111,6 +113,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if request.method == 'DELETE':
             return delete(request, pk, Recipe, CartSerializer)
 
+        return HttpResponse(status=400)
+
     @action(
         detail=True,
         methods=['post', 'delete'],
@@ -118,11 +122,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
-            return post(request, pk, Recipe, Cart,
-                                         CartSerializer)
+            return post(request, pk, Recipe, Cart, CartSerializer)
 
         if request.method == 'DELETE':
             return delete(request, pk, Recipe, CartSerializer)
+
+        return HttpResponse(status=400)
 
     @action(
         detail=False,

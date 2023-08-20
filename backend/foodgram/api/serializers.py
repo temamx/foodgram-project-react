@@ -102,8 +102,8 @@ class WriteRecipeSerializer(ModelSerializer):
         validators=(
             MinValueValidator(
                 limit_value=1,
-                message=(f'Время приготовления не может быть '
-                         f'меньше 1 минуты')
+                message=('Время приготовления не может быть '
+                         'меньше 1 минуты')
             ),
         )
     )
@@ -158,11 +158,13 @@ class WriteRecipeSerializer(ModelSerializer):
         instance.save()
         return instance
 
+
 class RecipeShortInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+
 
 class CartSerializer(ModelSerializer):
 
@@ -184,6 +186,7 @@ class CartSerializer(ModelSerializer):
             context={'request': request}
         ).data
 
+
 class FavoriteSerializer(ModelSerializer):
 
     class Meta:
@@ -203,6 +206,7 @@ class FavoriteSerializer(ModelSerializer):
             instance.recipe,
             context={'request': request}
         ).data
+
 
 # Сериализаторы для пользователя
 class UserSerializer(ModelSerializer):
@@ -282,7 +286,7 @@ class ResponseSubscribeSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'id', 'username', 'first_name',
                   'last_name', 'is_subscribed', 'recipes', 'recipes_count')
-        
+
     def get_recipes(self, obj) -> dict:
         request = self.context.get('request')
         recipes_limit = request.POST.get('recipes_limit')

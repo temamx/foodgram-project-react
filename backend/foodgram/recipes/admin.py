@@ -4,6 +4,7 @@ from django.contrib import admin
 from recipes.models import (Favorite, Ingredient, Recipe,
                             AmountOfIngridients, Cart, Tag)
 
+
 @admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
     list_display = ('pk', 'user', 'recipe')
@@ -43,7 +44,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
     def favorites_amount(self, obj):
         return obj.favorites.count()
-    
+
 
 @admin.register(Cart)
 class ShoppingCartAdmin(admin.ModelAdmin):
