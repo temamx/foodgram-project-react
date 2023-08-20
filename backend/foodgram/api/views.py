@@ -10,10 +10,10 @@ from rest_framework.response import Response
 from djoser.views import UserViewSet
 
 from api.filters import IngredientFilter, RecipeFilter
-from api.permissions import IsAdminAuthorOrReadOnly
+from api.permissions import IsAuthorOrReadOnly
 from api.serializers import (CartSerializer, FavoriteSerializer, FollowSerializer, IngredientSerializer,
                              ReadRecipeSerializer, ResponseSubscribeSerializer,
-                             TagSerialiser
+                             TagSerializer
                              )
 from api.utils import post, delete
 from recipes.models import (Favorite, Ingredient, Recipe,
@@ -73,7 +73,7 @@ class CustomUserViewSet(UserViewSet):
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
-    serializer_class = TagSerialiser
+    serializer_class = TagSerializer
     permission_classes = (AllowAny, )
     pagination_class = None
 
@@ -89,7 +89,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (IsAdminAuthorOrReadOnly, )
+    permission_classes = (IsAuthorOrReadOnly, )
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     http_method_names = ['get', 'post', 'patch', 'delete']

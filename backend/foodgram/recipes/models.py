@@ -1,6 +1,5 @@
 from django.core.validators import MinValueValidator
 from django.db import models
-from backend.foodgram.recipes.admin import IngredientAdmin
 
 from users.models import User
 
@@ -29,7 +28,28 @@ class Tag(models.Model):
     def __str__(self):
         return self.name
 
-class Recipе(models.Model):
+
+class Ingredient(models.Model):
+    name = models.CharField(
+        verbose_name='Название',
+        max_length=250,
+        db_index=True
+    )
+    measurement_unit = models.CharField(
+        verbose_name='Единица измерения',
+        max_length=100,
+    )
+
+    class Meta:
+        ordering=['name'],
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
+
+    def __str__(self):
+        return self.name
+
+
+class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -49,10 +69,10 @@ class Recipе(models.Model):
         verbose_name='Текст'
     )
     ingredients = models.ManyToManyField(
-        IngredientAdmin,
+        Ingredient,
         verbose_name='Ингредиенты',
         db_index=True,
-        through='RecipeIngredient',
+        through='AmountOfIngridients',
         related_name='recipes'
     )
     tags = models.ManyToManyField(
@@ -77,28 +97,10 @@ class Recipе(models.Model):
     def __str__(self):
         return self.name
 
-class Ingredient(models.Model):
-    name = models.CharField(
-        verbose_name='Название',
-        max_length=250,
-        db_index=True
-    )
-    measurement_unit = models.CharField(
-        verbose_name='Единица измерения',
-        max_length=100,
-    )
-
-    class Meta:
-        ordering=['name'],
-        verbose_name = 'Ингредиент'
-        verbose_name_plural = 'Ингредиенты'
-
-    def __str__(self):
-        return self.name
 
 class AmountOfIngridients(models.Model):
     recipe = models.ForeignKey(
-        Recipе,
+        Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
         related_name='amountingridients'
@@ -141,7 +143,7 @@ class Favorite(models.Model):
         related_name='favorites',
     )
     recipe = models.ForeignKey(
-        Recipе,
+        Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
         related_name='favorites',
@@ -170,7 +172,7 @@ class Cart(models.Model):
         related_name='carts'
     )
     recipe = models.ForeignKey(
-        Recipе,
+        Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
         related_name='carts',

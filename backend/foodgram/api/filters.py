@@ -16,13 +16,13 @@ class RecipeFilter(FilterSet):
     is_favorited = filters.BooleanFilter(
         method='get_is_in_favorited'
     )
-    is_in_shopping_cart = filters.BooleanFilter(
+    is_in_cart = filters.BooleanFilter(
         method='get_is_in_cart'
     )
 
     class Meta:
         model = Recipe
-        fields = ('author', 'tags', 'is_favorited', 'get_is_in_cart')
+        fields = ('author', 'tags', 'is_favorited', 'is_in_cart')
 
     def get_is_in_favorited(self, queryset, name, value):
         """

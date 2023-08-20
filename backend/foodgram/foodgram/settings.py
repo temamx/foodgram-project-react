@@ -18,6 +18,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'users',
+    'recipes',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -120,16 +123,16 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-    'DEFAULT_PAGINATION_CLASS': 'api.pagination.PageLimitPagination',
+    'DEFAULT_PAGINATION_CLASS': 'api.pagination.Pagination',
     'PAGE_SIZE': 6,
 }
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
-    'SERIALIZERS': {'user': 'users.serializers.UserSerializer',
-                    'user_create': 'users.serializers.CreateUserSerializer',
-                    'current_user': 'users.serializers.UserSerializer',
+    'SERIALIZERS': {'user': 'api.serializers.UserSerializer',
+                    'user_create': 'api.serializers.CreateUserSerializer',
+                    'current_user': 'api.serializers.UserSerializer',
                     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],

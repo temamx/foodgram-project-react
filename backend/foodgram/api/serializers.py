@@ -1,7 +1,7 @@
 from django.core.validators import MinValueValidator
 from django.db import transaction
 from django.forms import CharField, EmailField
-from utils import Base64ImageField
+from api.utils import Base64ImageField
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
@@ -59,7 +59,7 @@ class TagSerializer(ModelSerializer):
 
 class ReadRecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    author = AmountOfIngridients(read_only=True)
+    author = AmountOfIngridients()
     ingredients = IngredientRecipeSerializer(
         many=True,
         source='ingredientrecipes',
@@ -77,13 +77,13 @@ class ReadRecipeSerializer(ModelSerializer):
                   'is_in_cart', 'name', 'image',
                   'text', 'cooking_time',)
 
-    def get_is_favorited(self, obj) -> Favorite:
+    def get_is_in_favorited(self, obj) -> Favorite:
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
         return Favorite.objects.filter(user=request.user, recipe=obj).exists()
 
-    def get_is_in_shopping_cart(self, obj) -> Favorite:
+    def get_is_in_cart(self, obj) -> Favorite:
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
