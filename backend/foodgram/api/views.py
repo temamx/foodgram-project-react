@@ -15,7 +15,7 @@ from api.serializers import (CartSerializer, FavoriteSerializer,
                              FollowSerializer, IngredientSerializer,
                              ReadRecipeSerializer,
                              ResponseSubscribeSerializer,
-                             TagSerializer
+                             TagSerializer, WriteRecipeSerializer,
                              )
 from api.utils import post, delete
 from recipes.models import (Favorite, Ingredient, Recipe,
@@ -99,7 +99,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return ReadRecipeSerializer
-        return ReadRecipeSerializer
+        return WriteRecipeSerializer
 
     @action(
         detail=True,

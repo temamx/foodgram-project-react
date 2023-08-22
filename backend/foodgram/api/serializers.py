@@ -57,7 +57,7 @@ class TagSerializer(ModelSerializer):
         fields = ('id', 'name', 'color', 'slug',)
 
 
-class RecipeShortInfoSerializer(serializers.ModelSerializer):
+class RecipeBriefInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
@@ -66,7 +66,7 @@ class RecipeShortInfoSerializer(serializers.ModelSerializer):
 
 # Сериализаторы для пользователя
 class CustomUserSerializer(UserSerializer):
-    recipes = RecipeShortInfoSerializer(many=True)
+    recipes = RecipeBriefInfoSerializer(many=True)
     is_subscribed = serializers.SerializerMethodField(
         method_name='get_is_subscribed')
 
@@ -199,7 +199,7 @@ class CartSerializer(ModelSerializer):
 
     def to_representate_an_info(self, instance):
         request = self.context.get('request')
-        return RecipeShortInfoSerializer(
+        return RecipeBriefInfoSerializer(
             instance.recipe,
             context={'request': request}
         ).data
@@ -220,7 +220,7 @@ class FavoriteSerializer(ModelSerializer):
 
     def to_representate_an_info(self, instance):
         request = self.context.get('request')
-        return RecipeShortInfoSerializer(
+        return RecipeBriefInfoSerializer(
             instance.recipe,
             context={'request': request}
         ).data
