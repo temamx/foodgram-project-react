@@ -57,9 +57,34 @@ class TagSerializer(ModelSerializer):
         fields = ('id', 'name', 'color', 'slug',)
 
 
+class RecipeShortInfoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
+# Сериализаторы для пользователя
+class CustomUserSerializer(UserSerializer):
+    recipes = RecipeShortInfoSerializer(many=True)
+    is_subscribed = serializers.SerializerMethodField(
+        method_name='get_is_subscribed')
+
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name', 'is_subscribed', 'recipes',)
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request is None or request.user.is_anonymous:
+            return False
+        return Follow.objects.filter(user=request.user, author=obj).exists()
+
+
 class ReadRecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    author = UserSerializer(read_only=True, default=serializers.CurrentUserDefault())
+    author = CustomUserSerializer(read_only=True, default=serializers.CurrentUserDefault())
     ingredients = IngredientRecipeSerializer(
         many=True,
         source='amountingridients',
@@ -91,7 +116,7 @@ class ReadRecipeSerializer(ModelSerializer):
 
 
 class WriteRecipeSerializer(ModelSerializer):
-    author = UserSerializer(read_only=True, default=serializers.CurrentUserDefault())
+    author = CustomUserSerializer(read_only=True, default=serializers.CurrentUserDefault())
     ingredients = PostAmountOfIngridientsSerializer(
         many=True,
     )
@@ -159,13 +184,6 @@ class WriteRecipeSerializer(ModelSerializer):
         return instance
 
 
-class RecipeShortInfoSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
-
-
 class CartSerializer(ModelSerializer):
 
     class Meta:
@@ -206,24 +224,6 @@ class FavoriteSerializer(ModelSerializer):
             instance.recipe,
             context={'request': request}
         ).data
-
-
-# Сериализаторы для пользователя
-class CustomUserSerializer(UserSerializer):
-    recipes = RecipeShortInfoSerializer(many=True)
-    is_subscribed = serializers.SerializerMethodField(
-        method_name='get_is_subscribed')
-
-    class Meta:
-        model = User
-        fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'recipes',)
-
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
-            return False
-        return Follow.objects.filter(user=request.user, author=obj).exists()
 
 
 class CreateUserSerializer(UserCreateSerializer):
