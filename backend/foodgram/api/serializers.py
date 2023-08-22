@@ -1,16 +1,16 @@
 from django.core.validators import MinValueValidator
 from django.db import transaction
 from django.forms import CharField, EmailField
-from api.utils import Base64ImageField
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from users.models import Follow, User
 
-from recipes.models import (Cart, Favorite, Ingredient, AmountOfIngridients,
-                            Recipe, Tag)
-from users.models import User, Follow
-
-from djoser.serializers import UserCreateSerializer, UserSerializer
+from api.utils import Base64ImageField
+from recipes.models import (
+    AmountOfIngridients, Cart, Favorite, Ingredient, Recipe, Tag,
+)
 
 
 class IngredientSerializer(ModelSerializer):
@@ -32,9 +32,7 @@ class IngredientRecipeSerializer(ModelSerializer):
 
 
 class PostAmountOfIngridientsSerializer(ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=Ingredient.objects.all()
-    )
+    id = serializers.IntegerField()
     amount = serializers.IntegerField(
         validators=(
             MinValueValidator(
@@ -57,7 +55,7 @@ class TagSerializer(ModelSerializer):
         fields = ('id', 'name', 'color', 'slug',)
 
 
-class RecipeBriefInfoSerializer(serializers.ModelSerializer):
+class RecipeShortInfoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
@@ -66,7 +64,7 @@ class RecipeBriefInfoSerializer(serializers.ModelSerializer):
 
 # Сериализаторы для пользователя
 class CustomUserSerializer(UserSerializer):
-    recipes = RecipeBriefInfoSerializer(many=True)
+    recipes = RecipeShortInfoSerializer(many=True)
     is_subscribed = serializers.SerializerMethodField(
         method_name='get_is_subscribed')
 
@@ -135,31 +133,32 @@ class WriteRecipeSerializer(ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('author', 'ingredients', 'tags', 'image', 'name', 'text',
+        fields = ('id', 'author', 'ingredients', 'tags', 'image', 'name', 'text',
                   'cooking_time')
+
+    def to_representation(self, instance):
+        serializer = ReadRecipeSerializer(instance, context=self.context)
+        return serializer.data
 
     @transaction.atomic
     def create(self, validated_data):
-        request = self.context.get('request')
+        request = self.context['request'].user
         tags = validated_data.pop('tags')
-        ingredients = validated_data.pop('ingredientrecipes')
-        recipe = Recipe.objects.create(author=request.user, **validated_data)
+        ingredients = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(author=request, **validated_data)
         recipe.tags.set(tags)
         for ingredient in ingredients:
-            amount = ingredient.get('amount')
-            ingredient_id = ingredient.get('id')
-            if (AmountOfIngridients.objects.filter(
-                    recipe=recipe, ingredient=ingredient_id).exists()):
-                raise serializers.ValidationError(
-                    {'errors': 'Нельзя добавить два одинаковых ингредиента!'}
-                )
             AmountOfIngridients.objects.create(
-                recipe=recipe, ingredient=ingredient_id, amount=amount)
+                recipe=recipe,
+                ingredient_id=ingredient.get('id'),
+                amount=ingredient.get('amount')
+            )
+
         return recipe
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        ingredients = validated_data.pop('ingredientrecipes')
+        ingredients = validated_data.pop('ingredients')
         AmountOfIngridients.objects.filter(recipe=instance).delete()
         tags = validated_data.pop('tags')
         instance.tags.clear()
@@ -170,15 +169,10 @@ class WriteRecipeSerializer(ModelSerializer):
         instance.cooking_time = validated_data.get(
             'cooking_time', instance.cooking_time)
         for ingredient in ingredients:
-            amount = ingredient.get('amount')
-            ingredient_id = ingredient.get('id')
-            if (AmountOfIngridients.objects.filter(
-                    recipe=instance, ingredient=ingredient_id).exists()):
-                raise serializers.ValidationError(
-                    {'errors': 'Нельзя добавить два одинаковых ингредиента!'}
-                )
             AmountOfIngridients.objects.create(
-                recipe=instance, ingredient=ingredient_id, amount=amount
+                recipe=instance,
+                ingredient_id=ingredient.get('id'),
+                amount=ingredient.get('amount')
             )
         instance.save()
         return instance
@@ -199,7 +193,7 @@ class CartSerializer(ModelSerializer):
 
     def to_representate_an_info(self, instance):
         request = self.context.get('request')
-        return RecipeBriefInfoSerializer(
+        return RecipeShortInfoSerializer(
             instance.recipe,
             context={'request': request}
         ).data
@@ -220,7 +214,7 @@ class FavoriteSerializer(ModelSerializer):
 
     def to_representate_an_info(self, instance):
         request = self.context.get('request')
-        return RecipeBriefInfoSerializer(
+        return RecipeShortInfoSerializer(
             instance.recipe,
             context={'request': request}
         ).data

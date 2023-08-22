@@ -6,7 +6,6 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.core.files.base import ContentFile
 
-from api.serializers import RecipeBriefInfoSerializer
 from recipes.models import Recipe
 
 
@@ -30,7 +29,7 @@ def post(self, user, pk, model):
                 f'Вы уже добавили рецепт {obj}!'},
             status=status.HTTP_400_BAD_REQUEST
         )
-    serializer = RecipeBriefInfoSerializer(obj)
+    serializer = serializers(obj)
     model.objects.create(
         recipe__id=pk, user=user
     )
