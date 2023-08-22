@@ -8,17 +8,17 @@ class Tag(models.Model):
     name = models.CharField(
         verbose_name='Название тега',
         max_length=200,
-        unique=True
+        unique=True,
     )
     color = models.CharField(
         verbose_name='Цвет',
         max_length=7,
-        unique=True
+        unique=True,
     )
     slug = models.SlugField(
         verbose_name='Слаг',
         max_length=200,
-        unique=True
+        unique=True,
     )
 
     class Meta:
@@ -73,12 +73,13 @@ class Recipe(models.Model):
         verbose_name='Ингредиенты',
         db_index=True,
         through='AmountOfIngridients',
-        related_name='recipes'
+        related_name='recipes',
     )
     tags = models.ManyToManyField(
         Tag,
         verbose_name='Теги',
-        db_index=True
+        db_index=True,
+        related_name='recipes',
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления',

@@ -59,31 +59,31 @@ class TagSerializer(ModelSerializer):
 
 class ReadRecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    author = AmountOfIngridients()
+    author = UserSerializer(read_only=True)
     ingredients = IngredientRecipeSerializer(
         many=True,
-        source='ingredientrecipes',
+        source='amountingridients',
         read_only=True
     )
     image = Base64ImageField()
     is_in_favorited = serializers.SerializerMethodField(
-        method_name='get_is_in_favorited')
-    is_in_cart = serializers.SerializerMethodField(
-        method_name='get_is_in_cart')
+        method_name='get_is_favorited')
+    is_in_shopping_cart = serializers.SerializerMethodField(
+        method_name='get_is_in_shopping_cart')
 
     class Meta:
         model = Recipe
-        fields = ('id', 'tags', 'author', 'ingredients', 'is_in_favorited',
-                  'is_in_cart', 'name', 'image',
+        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
+                  'is_in__shopping_cart', 'name', 'image',
                   'text', 'cooking_time',)
 
-    def get_is_in_favorited(self, obj) -> Favorite:
+    def get_is_favorited(self, obj) -> Favorite:
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
         return Favorite.objects.filter(user=request.user, recipe=obj).exists()
 
-    def get_is_in_cart(self, obj) -> Favorite:
+    def get_is_in_shopping_cart(self, obj) -> Favorite:
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
@@ -91,9 +91,9 @@ class ReadRecipeSerializer(ModelSerializer):
 
 
 class WriteRecipeSerializer(ModelSerializer):
+    author = UserSerializer(read_only=True)
     ingredients = PostAmountOfIngridientsSerializer(
         many=True,
-        source='ingredientrecipes',
     )
     tags = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Tag.objects.all())
@@ -110,7 +110,7 @@ class WriteRecipeSerializer(ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('ingredients', 'tags', 'image', 'name', 'text',
+        fields = ('author', 'ingredients', 'tags', 'image', 'name', 'text',
                   'cooking_time')
 
     @transaction.atomic
@@ -122,14 +122,14 @@ class WriteRecipeSerializer(ModelSerializer):
         recipe.tags.set(tags)
         for ingredient in ingredients:
             amount = ingredient.get('amount')
-            base_ingredient = ingredient.get('id')
+            ingredient_id = ingredient.get('id')
             if (AmountOfIngridients.objects.filter(
-                    recipe=recipe, ingredient=base_ingredient).exists()):
+                    recipe=recipe, ingredient=ingredient_id).exists()):
                 raise serializers.ValidationError(
                     {'errors': 'Нельзя добавить два одинаковых ингредиента!'}
                 )
             AmountOfIngridients.objects.create(
-                recipe=recipe, ingredient=base_ingredient, amount=amount)
+                recipe=recipe, ingredient=ingredient_id, amount=amount)
         return recipe
 
     @transaction.atomic
@@ -146,14 +146,14 @@ class WriteRecipeSerializer(ModelSerializer):
             'cooking_time', instance.cooking_time)
         for ingredient in ingredients:
             amount = ingredient.get('amount')
-            base_ingredient = ingredient.get('id')
+            ingredient_id = ingredient.get('id')
             if (AmountOfIngridients.objects.filter(
-                    recipe=instance, ingredient=base_ingredient).exists()):
+                    recipe=instance, ingredient=ingredient_id).exists()):
                 raise serializers.ValidationError(
                     {'errors': 'Нельзя добавить два одинаковых ингредиента!'}
                 )
             AmountOfIngridients.objects.create(
-                recipe=instance, ingredient=base_ingredient, amount=amount
+                recipe=instance, ingredient=ingredient_id, amount=amount
             )
         instance.save()
         return instance
