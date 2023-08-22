@@ -66,7 +66,7 @@ class ReadRecipeSerializer(ModelSerializer):
         read_only=True
     )
     image = Base64ImageField()
-    is_in_favorited = serializers.SerializerMethodField(
+    is_favorited = serializers.SerializerMethodField(
         method_name='get_is_favorited')
     is_in_shopping_cart = serializers.SerializerMethodField(
         method_name='get_is_in_shopping_cart')
@@ -74,7 +74,7 @@ class ReadRecipeSerializer(ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited',
-                  'is_in__shopping_cart', 'name', 'image',
+                  'is_in_shopping_cart', 'name', 'image',
                   'text', 'cooking_time',)
 
     def get_is_favorited(self, obj) -> Favorite:
