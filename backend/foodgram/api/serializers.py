@@ -59,7 +59,7 @@ class TagSerializer(ModelSerializer):
 
 class ReadRecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    author = UserSerializer(read_only=True)
+    author = UserSerializer(read_only=True, default=serializers.CurrentUserDefault())
     ingredients = IngredientRecipeSerializer(
         many=True,
         source='amountingridients',
@@ -91,7 +91,7 @@ class ReadRecipeSerializer(ModelSerializer):
 
 
 class WriteRecipeSerializer(ModelSerializer):
-    author = UserSerializer(read_only=True)
+    author = UserSerializer(read_only=True, default=serializers.CurrentUserDefault())
     ingredients = PostAmountOfIngridientsSerializer(
         many=True,
     )
@@ -209,14 +209,15 @@ class FavoriteSerializer(ModelSerializer):
 
 
 # Сериализаторы для пользователя
-class UserSerializer(ModelSerializer):
+class CustomUserSerializer(UserSerializer):
+    recipes = RecipeShortInfoSerializer(many=True)
     is_subscribed = serializers.SerializerMethodField(
         method_name='get_is_subscribed')
 
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed',)
+                  'last_name', 'is_subscribed', 'recipes',)
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
@@ -240,8 +241,8 @@ class CreateUserSerializer(UserCreateSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    author = UserSerializer
-    user = UserSerializer
+    author = CustomUserSerializer
+    user = CustomUserSerializer
 
     class Meta:
         model = Follow
