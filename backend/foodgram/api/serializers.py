@@ -82,7 +82,9 @@ class CustomUserSerializer(UserSerializer):
 
 class ReadRecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    author = CustomUserSerializer(read_only=True, default=serializers.CurrentUserDefault())
+    author = CustomUserSerializer(
+        read_only=True, default=serializers.CurrentUserDefault()
+    )
     ingredients = IngredientRecipeSerializer(
         many=True,
         source='amountingridients',
@@ -114,7 +116,9 @@ class ReadRecipeSerializer(ModelSerializer):
 
 
 class WriteRecipeSerializer(ModelSerializer):
-    author = CustomUserSerializer(read_only=True, default=serializers.CurrentUserDefault())
+    author = CustomUserSerializer(
+        read_only=True, default=serializers.CurrentUserDefault()
+    )
     ingredients = PostAmountOfIngridientsSerializer(
         many=True,
     )
@@ -133,8 +137,10 @@ class WriteRecipeSerializer(ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('id', 'author', 'ingredients', 'tags', 'image', 'name', 'text',
-                  'cooking_time')
+        fields = (
+            'id', 'author', 'ingredients', 'tags', 'image',
+            'name', 'text', 'cooking_time'
+        )
 
     def to_representation(self, instance):
         serializer = ReadRecipeSerializer(instance, context=self.context)
