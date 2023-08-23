@@ -185,10 +185,12 @@ class WriteRecipeSerializer(ModelSerializer):
 
 
 class CartSerializer(ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
 
     class Meta:
         model = Cart
-        fields = '__all__'
+        fields = ('user', 'recipe')
         validators = (
             UniqueTogetherValidator(
                 queryset=Cart.objects.all(),
@@ -206,10 +208,12 @@ class CartSerializer(ModelSerializer):
 
 
 class FavoriteSerializer(ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
 
     class Meta:
         model = Favorite
-        fields = '__all__'
+        fields = ('user', 'recipe')
         validators = (
             UniqueTogetherValidator(
                 queryset=Favorite.objects.all(),
@@ -290,10 +294,10 @@ class ResponseSubscribeSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj) -> dict:
         request = self.context.get('request')
-        recipes_limit = request.POST.get('recipes_limit')
+        recipes_limit = request.query_params.get('recipes_limit')
         queryset = obj.recipes.all()
         if recipes_limit:
-            queryset = queryset[:(recipes_limit)]
+            queryset = queryset[:(int(recipes_limit))]
         return RecipesBriefSerializer(queryset, many=True).data
 
     def get_is_subscribed(self, obj) -> Follow:

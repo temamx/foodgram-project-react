@@ -1,26 +1,24 @@
 from django.db.models import Sum
-from api.pagination import Pagination
-from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import HttpResponse, get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-
-from djoser.views import UserViewSet
+from users.models import Follow, User
 
 from api.filters import IngredientFilter, RecipeFilter
+from api.pagination import Pagination
 from api.permissions import IsAuthorOrReadOnly
-from api.serializers import (CartSerializer, FavoriteSerializer,
-                             FollowSerializer, IngredientSerializer,
-                             ReadRecipeSerializer,
-                             ResponseSubscribeSerializer,
-                             TagSerializer, WriteRecipeSerializer,
-                             )
-from api.utils import post, delete
-from recipes.models import (Favorite, Ingredient, Recipe,
-                            AmountOfIngridients, Cart, Tag)
-from users.models import Follow, User
+from api.serializers import (
+    FollowSerializer, IngredientSerializer, ReadRecipeSerializer,
+    RecipeShortInfoSerializer, ResponseSubscribeSerializer, TagSerializer,
+    WriteRecipeSerializer,
+)
+from recipes.models import (
+    AmountOfIngridients, Cart, Favorite, Ingredient, Recipe, Tag,
+)
 
 
 class CustomUserViewSet(UserViewSet):
@@ -95,11 +93,35 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     http_method_names = ['get', 'post', 'patch', 'delete']
+    pagination_class = Pagination
+    filterset_fields = ('tags', 'author',)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
             return ReadRecipeSerializer
         return WriteRecipeSerializer
+
+    def posts(self, model, user, pk):
+        if model.objects.filter(user=user, recipe__id=pk).exists():
+            return Response(
+                {'errors': f'Рецепт уже добавлен в {model.__name__}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        recipe = get_object_or_404(Recipe, pk=pk)
+        model.objects.create(user=user, recipe=recipe)
+        serializer = RecipeShortInfoSerializer(recipe)
+        return Response(serializer.data,
+                        status=status.HTTP_201_CREATED)
+
+    def deletes(self, model, user, pk):
+        obj = model.objects.filter(user=user, recipe__id=pk)
+        if obj.exists():
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'errors': f'Рецепт не добавлен в {model.__name__}'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(
         detail=True,
@@ -108,12 +130,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk):
         if request.method == 'POST':
-            return post(request, pk, Recipe, Favorite, FavoriteSerializer)
-
-        if request.method == 'DELETE':
-            return delete(request, pk, Recipe, Favorite)
-
-        return HttpResponse(status=400)
+            return self.posts(Favorite, request.user, pk)
+        return self.deletes(Favorite, request.user, pk)
 
     @action(
         detail=True,
@@ -122,12 +140,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
-            return post(request, pk, Recipe, Cart, CartSerializer)
-
-        if request.method == 'DELETE':
-            return delete(request, pk, Recipe, Cart)
-
-        return HttpResponse(status=400)
+            return self.posts(Cart, request.user, pk)
+        return self.deletes(Cart, request.user, pk)
 
     @action(
         detail=False,
@@ -139,7 +153,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             recipe__carts__user=request.user
         ).values(
             'ingredient__name', 'ingredient__measurement_unit'
-        ).annotate(ingredient_amount=Sum('amount'))
+        ).annotate(ingredient_amount=Sum('amount')).order_by()
         shopping_list = ['Список покупок:\n']
         for ingredient in ingredients:
             name = ingredient['ingredient__name']
