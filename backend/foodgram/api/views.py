@@ -111,7 +111,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return post(request, pk, Recipe, Favorite, FavoriteSerializer)
 
         if request.method == 'DELETE':
-            return delete(request, pk, Recipe, CartSerializer)
+            return delete(request, pk, Recipe, Cart)
 
         return HttpResponse(status=400)
 
@@ -125,7 +125,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return post(request, pk, Recipe, Cart, CartSerializer)
 
         if request.method == 'DELETE':
-            return delete(request, pk, Recipe, CartSerializer)
+            return delete(request, pk, Recipe, Cart)
 
         return HttpResponse(status=400)
 
