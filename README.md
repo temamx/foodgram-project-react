@@ -17,8 +17,15 @@
 
 ## Как запустить проект
 git clone git@github.com:temamx/foodgram-project-react.git
-cd infra
+
 docker-compose up -d --build
+
+docker-compose exec backend python manage.py makemigrations users
+
+docker-compose exec backend python manage.py makemigrations recipes
+
 docker-compose exec backend python manage.py migrate
+
 docker-compose exec backend python manage.py createsuperuser
+
 docker-compose exec backend python manage.py collectstatic
