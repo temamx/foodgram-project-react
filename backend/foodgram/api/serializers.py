@@ -5,9 +5,9 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
-from users.models import Follow, User
+from drf_extra_fields.fields import Base64ImageField
 
-from api.utils import Base64ImageField
+from users.models import Follow, User
 from recipes.models import (
     AmountOfIngridients, Cart, Favorite, Ingredient, Recipe, Tag,
 )
@@ -20,10 +20,11 @@ class IngredientSerializer(ModelSerializer):
 
 
 class IngredientRecipeSerializer(ModelSerializer):
-    id = serializers.ReadOnlyField(source='ingredient.id')
-    name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit'
+    id = serializers.PrimaryKeyRelatedField(source='ingredient.id', read_only=True)
+    name = serializers.CharField(source='ingredient.name', read_only=True)
+    measurement_unit = serializers.CharField(
+        source='ingredient.measurement_unit',
+        read_only=True
     )
 
     class Meta:
@@ -102,17 +103,17 @@ class ReadRecipeSerializer(ModelSerializer):
                   'is_in_shopping_cart', 'name', 'image',
                   'text', 'cooking_time',)
 
-    def get_is_favorited(self, obj) -> Favorite:
+    def is_items_in_group(self, obj, model):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return Favorite.objects.filter(user=request.user, recipe=obj).exists()
+        return model.objects.filter(user=request.user, recipe=obj).exists()
 
-    def get_is_in_shopping_cart(self, obj) -> Favorite:
-        request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
-            return False
-        return Cart.objects.filter(user=request.user, recipe=obj).exists()
+    def get_is_favorited(self, obj):
+        return self.is_items_in_group(obj, Favorite)
+
+    def get_is_in_shopping_cart(self, obj):
+        return self.is_items_in_group(obj, Cart)
 
 
 class WriteRecipeSerializer(ModelSerializer):

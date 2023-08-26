@@ -6,8 +6,8 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from users.models import Follow, User
 
+from users.models import Follow, User
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import Pagination
 from api.permissions import IsAuthorOrReadOnly
@@ -101,7 +101,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return ReadRecipeSerializer
         return WriteRecipeSerializer
 
-    def posts(self, model, user, pk):
+    def add_recipe(self, model, user, pk):
         if model.objects.filter(user=user, recipe__id=pk).exists():
             return Response(
                 {'errors': f'Рецепт уже добавлен в {model.__name__}'},
@@ -113,7 +113,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return Response(serializer.data,
                         status=status.HTTP_201_CREATED)
 
-    def deletes(self, model, user, pk):
+    def delete_recipe(self, model, user, pk):
         obj = model.objects.filter(user=user, recipe__id=pk)
         if obj.exists():
             obj.delete()
@@ -130,8 +130,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, pk):
         if request.method == 'POST':
-            return self.posts(Favorite, request.user, pk)
-        return self.deletes(Favorite, request.user, pk)
+            return self.add_recipe(Favorite, request.user, pk)
+        return self.delete_recipe(Favorite, request.user, pk)
 
     @action(
         detail=True,
@@ -140,8 +140,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     )
     def shopping_cart(self, request, pk):
         if request.method == 'POST':
-            return self.posts(Cart, request.user, pk)
-        return self.deletes(Cart, request.user, pk)
+            return self.add_recipe(Cart, request.user, pk)
+        return self.delete_recipe(Cart, request.user, pk)
 
     @action(
         detail=False,

@@ -10,6 +10,8 @@ class FavoriteAdmin(admin.ModelAdmin):
     search_fields = ('user', 'recipe')
     empty_value_display = '-empty-'
 
+class TagInline(admin.TabularInline):
+    model = Tag
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
@@ -17,6 +19,7 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('name', 'color', 'slug')
     list_filter = ('name', 'color', 'slug')
     empty_value_display = '-empty-'
+    # inlines = (TagInline,)
 
 
 @admin.register(Ingredient)

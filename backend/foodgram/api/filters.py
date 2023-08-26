@@ -1,8 +1,8 @@
-from users.models import User
 from django_filters.rest_framework import filters, FilterSet
 from rest_framework.filters import SearchFilter
 
 from recipes.models import Recipe, Tag
+from users.models import User
 
 
 class RecipeFilter(FilterSet):
@@ -25,44 +25,18 @@ class RecipeFilter(FilterSet):
         model = Recipe
         fields = ('author', 'tags', 'is_favorited', 'is_in_shopping_cart')
 
-    def get_is_favorited(self, queryset, name, value):
-        """
-        Пользовательский метод фильтрации для отбора рецептов на основе того,
-        добавлены ли они в избранное текущим пользователем.
 
-        Аргументы:
-        - queryset (QuerySet): Базовый QuerySet рецептов.
-        - name (str): Название поля фильтра.
-        - value (bool): Значение, указывающее на необходимость
-        фильтрации избранных рецептов или нет.
-
-        Возвращает:
-        QuerySet: Отфильтрованный QuerySet рецептов
-        в зависимости от статуса избранного.
-        """
-        if self.request.user.is_authenticated and value:
-            return queryset.filter(favorites__user=self.request.user)
+    def apply_filter(self, queryset, filter_name, filter_key, user_check):
+        if self.request.user.is_authenticated and user_check:
+            filter_parameters = {filter_key: self.request.user}
+            return queryset.filter(**filter_parameters)
         return queryset
+
+    def get_is_favorited(self, queryset, name, value):
+        return self.apply_filter(queryset, name, "favorites__user", value)
 
     def get_is_in_shopping_cart(self, queryset, name, value):
-        """
-        Пользовательский метод фильтрации для отбора рецептов на основе того,
-        добавлены ли они в корзину покупок текущим пользователем.
-
-        Аргументы:
-        - queryset (QuerySet): Базовый QuerySet рецептов.
-        - name (str): Название поля фильтра.
-        - value (bool): Значение, указывающее на необходимость фильтрации
-        рецептов в корзине покупок или нет.
-
-        Возвращает:
-        QuerySet: Отфильтрованный QuerySet рецептов
-        в зависимости от статуса в корзине покупок.
-        """
-
-        if self.request.user.is_authenticated and value:
-            return queryset.filter(carts__user=self.request.user)
-        return queryset
+        return self.apply_filter(queryset, name, "carts__user", value)
 
 
 class IngredientFilter(SearchFilter):

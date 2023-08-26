@@ -152,3 +152,5 @@ DJOSER = {
         'user': ['djoser.permissions.CurrentUserOrAdminOrReadOnly']
     }
 }
+
+MAX_PAGE_SIZE = 6
