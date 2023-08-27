@@ -10,8 +10,6 @@ class FavoriteAdmin(admin.ModelAdmin):
     search_fields = ('user', 'recipe')
     empty_value_display = '-empty-'
 
-class TagInline(admin.TabularInline):
-    model = Tag
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
@@ -19,7 +17,6 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('name', 'color', 'slug')
     list_filter = ('name', 'color', 'slug')
     empty_value_display = '-empty-'
-    # inlines = (TagInline,)
 
 
 @admin.register(Ingredient)
@@ -34,14 +31,19 @@ class RecipeIngredientInline(admin.TabularInline):
     model = AmountOfIngridients
 
 
+class TagInline(admin.TabularInline):
+    model = Recipe.tags.through
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'author', 'favorites_amount')
     search_fields = ('name', 'author')
     list_filter = ('name', 'author', 'tags')
     empty_value_display = '-empty-'
+    exclude = ('tags',)
     inlines = [
-        RecipeIngredientInline,
+        RecipeIngredientInline, TagInline
     ]
 
     def favorites_amount(self, obj):

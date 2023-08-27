@@ -20,7 +20,9 @@ class IngredientSerializer(ModelSerializer):
 
 
 class IngredientRecipeSerializer(ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(source='ingredient.id', read_only=True)
+    id = serializers.PrimaryKeyRelatedField(
+        source='ingredient.id', read_only=True
+    )
     name = serializers.CharField(source='ingredient.name', read_only=True)
     measurement_unit = serializers.CharField(
         source='ingredient.measurement_unit',
@@ -81,6 +83,25 @@ class CustomUserSerializer(UserSerializer):
         return Follow.objects.filter(user=request.user, author=obj).exists()
 
 
+class ResponseSubscribeSerializer(CustomUserSerializer):
+    recipes_count = serializers.SerializerMethodField(
+        method_name='get_recipes_count')
+
+    class Meta(CustomUserSerializer.Meta):
+        fields = CustomUserSerializer.Meta.fields + ('recipes_count',)
+
+    def get_recipes(self, obj) -> dict:
+        request = self.context.get('request')
+        recipes_limit = request.query_params.get('recipes_limit')
+        queryset = obj.recipes.all()
+        if recipes_limit:
+            queryset = queryset[:(int(recipes_limit))]
+        return RecipesBriefSerializer(queryset, many=True).data
+
+    def get_recipes_count(self, obj) -> int:
+        return obj.recipes.all().count()
+
+
 class ReadRecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = CustomUserSerializer(
@@ -103,17 +124,17 @@ class ReadRecipeSerializer(ModelSerializer):
                   'is_in_shopping_cart', 'name', 'image',
                   'text', 'cooking_time',)
 
-    def is_items_in_group(self, obj, model):
+    def is_items_in_the_group(self, obj, model):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
         return model.objects.filter(user=request.user, recipe=obj).exists()
 
     def get_is_favorited(self, obj):
-        return self.is_items_in_group(obj, Favorite)
+        return self.is_items_in_the_group(obj, Favorite)
 
     def get_is_in_shopping_cart(self, obj):
-        return self.is_items_in_group(obj, Cart)
+        return self.is_items_in_the_group(obj, Cart)
 
 
 class WriteRecipeSerializer(ModelSerializer):
@@ -279,33 +300,3 @@ class RecipesBriefSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
-
-
-class ResponseSubscribeSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField(
-        method_name='get_is_subscribed')
-    recipes = serializers.SerializerMethodField(method_name='get_recipes')
-    recipes_count = serializers.SerializerMethodField(
-        method_name='get_recipes_count')
-
-    class Meta:
-        model = User
-        fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'recipes', 'recipes_count')
-
-    def get_recipes(self, obj) -> dict:
-        request = self.context.get('request')
-        recipes_limit = request.query_params.get('recipes_limit')
-        queryset = obj.recipes.all()
-        if recipes_limit:
-            queryset = queryset[:(int(recipes_limit))]
-        return RecipesBriefSerializer(queryset, many=True).data
-
-    def get_is_subscribed(self, obj) -> Follow:
-        request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
-            return False
-        return Follow.objects.filter(user=request.user, author=obj).exists()
-
-    def get_recipes_count(self, obj) -> int:
-        return obj.recipes.all().count()

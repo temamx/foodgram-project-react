@@ -1,31 +1,28 @@
 version: '3.3'
 
 volumes:
-  pg_data_prod:
-  static_volume:
-  media_volume:
+  pg_data_production:
+  static_production:
+  media_production:
 
 services:
   db:
     image: postgres:13.0-alpine
     volumes:
-      - pg_data_prod:/var/lib/postgresql/data/
+      - pg_data_production:/var/lib/postgresql/data
     env_file:
-      - ./.env
+      - .env
   backend:
-    image: temamx/foodgram_backend:latest
+    image: temamx/foodgram-project-react-backend
+    env_file: .env
     restart: always
     volumes:
-      - static_volume:/app/static/
-      - media_volume:/app/media/
+      - static:/app/static/
+      - media:/app/media/
     depends_on:
       - db
-    env_file:
-      - ./.env
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: temamx/foodgram-project-react-frontend
     volumes:
       - ../frontend/:/app/result_build/
   nginx:
@@ -36,5 +33,7 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
+      - media:/var/html/media/
+      - static:/var/html/static/
     depends_on:
       - backend
