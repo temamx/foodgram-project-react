@@ -96,7 +96,7 @@ class ResponseSubscribeSerializer(CustomUserSerializer):
         queryset = obj.recipes.all()
         if recipes_limit:
             queryset = queryset[:(int(recipes_limit))]
-        return RecipesBriefSerializer(queryset, many=True).data
+        return RecipesBriefSerializer(queryset[:3], many=True).data
 
     def get_recipes_count(self, obj) -> int:
         return obj.recipes.all().count()
