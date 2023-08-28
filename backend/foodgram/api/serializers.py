@@ -84,19 +84,20 @@ class CustomUserSerializer(UserSerializer):
 
 
 class ResponseSubscribeSerializer(CustomUserSerializer):
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField(
         method_name='get_recipes_count')
 
     class Meta(CustomUserSerializer.Meta):
-        fields = CustomUserSerializer.Meta.fields + ('recipes_count',)
+        fields = CustomUserSerializer.Meta.fields + ('recipes_count', 'recipes')
 
     def get_recipes(self, obj) -> dict:
         request = self.context.get('request')
         recipes_limit = request.query_params.get('recipes_limit')
         queryset = obj.recipes.all()
         if recipes_limit:
-            queryset = queryset[:(int(recipes_limit))]
-        return RecipesBriefSerializer(queryset[:3], many=True).data
+            recipes = queryset[:(int(recipes_limit))]
+        return RecipesBriefSerializer(recipes[:3], many=True).data
 
     def get_recipes_count(self, obj) -> int:
         return obj.recipes.all().count()
