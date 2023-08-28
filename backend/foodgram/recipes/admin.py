@@ -32,7 +32,7 @@ class RecipeIngredientInline(admin.TabularInline):
 
 
 class TagInline(admin.TabularInline):
-    model = Recipe.tags.through
+    model = Tag
 
 
 @admin.register(Recipe)
