@@ -89,8 +89,10 @@ class ResponseSubscribeSerializer(CustomUserSerializer):
         method_name='get_recipes_count')
 
     class Meta(CustomUserSerializer.Meta):
-        fields = CustomUserSerializer.Meta.fields
-        + ('recipes_count', 'recipes',)
+        fields = CustomUserSerializer.Meta.fields + (
+            'recipes_count',
+            'recipes',
+        )
 
     def get_recipes(self, obj) -> dict:
         request = self.context.get('request')
