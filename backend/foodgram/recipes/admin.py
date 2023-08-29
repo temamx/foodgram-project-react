@@ -1,4 +1,7 @@
+from typing import Any
+
 from django.contrib import admin
+from django.http.request import HttpRequest
 
 from recipes.models import (Favorite, Ingredient, Recipe,
                             AmountOfIngridients, Cart, Tag)
@@ -49,6 +52,13 @@ class RecipeAdmin(admin.ModelAdmin):
 
     def favorites_amount(self, obj):
         return obj.favorites.count()
+
+    def has_delete_permission(
+        self, request: HttpRequest, obj: Any | None = ...
+    ) -> bool:
+        return False if (
+            self.model.objects.count() < 1
+        ) else super().has_delete_permission(request, obj)
 
 
 @admin.register(Cart)
