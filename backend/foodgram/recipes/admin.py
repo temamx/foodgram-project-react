@@ -28,7 +28,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
 
 class RecipeIngredientInline(admin.TabularInline):
-    model = Recipe.ingredients.through
+    model = AmountOfIngridients
     min_num = 1
 
 

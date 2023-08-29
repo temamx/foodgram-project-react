@@ -116,7 +116,8 @@ class ReadRecipeSerializer(ModelSerializer):
     ingredients = IngredientRecipeSerializer(
         many=True,
         source='amountingridients',
-        read_only=True
+        read_only=True,
+        blank=False
     )
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField(
