@@ -116,8 +116,7 @@ class ReadRecipeSerializer(ModelSerializer):
     ingredients = IngredientRecipeSerializer(
         many=True,
         source='amountingridients',
-        read_only=True,
-        blank=False
+        read_only=True
     )
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField(
@@ -149,7 +148,7 @@ class WriteRecipeSerializer(ModelSerializer):
         read_only=True, default=serializers.CurrentUserDefault()
     )
     ingredients = PostAmountOfIngridientsSerializer(
-        many=True,
+        many=True, blank=False
     )
     tags = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Tag.objects.all())
