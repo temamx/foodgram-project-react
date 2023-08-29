@@ -1,7 +1,4 @@
-from typing import Any
-
 from django.contrib import admin
-from django.http.request import HttpRequest
 
 from recipes.models import (Favorite, Ingredient, Recipe,
                             AmountOfIngridients, Cart, Tag)
