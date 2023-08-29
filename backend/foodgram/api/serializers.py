@@ -39,7 +39,7 @@ class PostAmountOfIngridientsSerializer(ModelSerializer):
     amount = serializers.IntegerField(
         validators=(
             MinValueValidator(
-                limit_value=1,
+                1,
                 message=('Количество ингредиента не может быть'
                          'меньше 1!')
             ),
