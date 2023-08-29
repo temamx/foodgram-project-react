@@ -53,13 +53,6 @@ class RecipeAdmin(admin.ModelAdmin):
     def favorites_amount(self, obj):
         return obj.favorites.count()
 
-    def has_delete_permission(
-        self, request: HttpRequest, obj: Any | None = ...
-    ) -> bool:
-        return False if (
-            self.model.objects.count() < 1
-        ) else super().has_delete_permission(request, obj)
-
 
 @admin.register(Cart)
 class ShoppingCartAdmin(admin.ModelAdmin):

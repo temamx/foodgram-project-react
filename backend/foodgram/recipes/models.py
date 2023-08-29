@@ -79,7 +79,12 @@ class Recipe(models.Model):
         Ingredient,
         verbose_name='Ингредиенты',
         db_index=True,
-        through='AmountOfIngridients'
+        through='AmountOfIngridients',
+        validators=[
+            MinValueValidator(
+                1, 'Рецепт должен содержать хотя бы один ингредиент!'
+            )
+        ]
     )
     tags = models.ManyToManyField(
         Tag,
