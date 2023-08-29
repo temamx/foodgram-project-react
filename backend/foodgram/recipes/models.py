@@ -79,8 +79,7 @@ class Recipe(models.Model):
         Ingredient,
         verbose_name='Ингредиенты',
         db_index=True,
-        through='AmountOfIngridients',
-        blank=False
+        through='AmountOfIngridients'
     )
     tags = models.ManyToManyField(
         Tag,
@@ -117,7 +116,8 @@ class AmountOfIngridients(models.Model):
         Ingredient,
         verbose_name='Ингредиент',
         on_delete=models.CASCADE,
-        related_name='amountingridients'
+        related_name='amountingridients',
+        blank=False
     )
     amount = models.IntegerField(
         'Количество',
