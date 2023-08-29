@@ -110,14 +110,14 @@ class AmountOfIngridients(models.Model):
         Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
-        related_name='amountingridients'
+        related_name='amountingridients',
+        blank=False
     )
     ingredient = models.ForeignKey(
         Ingredient,
         verbose_name='Ингредиент',
         on_delete=models.CASCADE,
         related_name='amountingridients',
-        blank=False
     )
     amount = models.IntegerField(
         'Количество',
