@@ -148,7 +148,7 @@ class WriteRecipeSerializer(ModelSerializer):
         read_only=True, default=serializers.CurrentUserDefault()
     )
     ingredients = PostAmountOfIngridientsSerializer(
-        many=True, blank=False
+        many=True
     )
     tags = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Tag.objects.all())
