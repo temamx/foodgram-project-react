@@ -32,7 +32,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
 class IngredientsFormSet(BaseInlineFormSet):
     def clean(self):
-        super.clean()
+        super().clean()
 
         if any(self.errors):
             return
