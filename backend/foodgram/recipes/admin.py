@@ -50,7 +50,7 @@ class IngredientsFormSet(BaseInlineFormSet):
 
 
 class RecipeIngredientInline(admin.TabularInline):
-    model = Recipe.ingredients.through
+    model = AmountOfIngridients
     formset = IngredientsFormSet
 
 
