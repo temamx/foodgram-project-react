@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 
 from recipes.models import (Favorite, Ingredient, Recipe,
@@ -49,6 +50,32 @@ class RecipeAdmin(admin.ModelAdmin):
 
     def favorites_amount(self, obj):
         return obj.favorites.count()
+
+
+class CustomRecipeForm(forms.ModelForm):
+    class Meta:
+        model = Recipe
+        fields = '__all__'
+
+
+MyFormSet = forms.formset_factory(CustomRecipeForm)
+
+
+class CustomFormSet(MyFormSet):
+
+    def ingredients(self, obj):
+        return list(obj.ingredients.all())
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.ingredients() < 1:
+            raise forms.ValidationError(
+                'Нужно добавить хотя бы один ингредиент'
+            )
+        return cleaned_data
+
+
+admin.site.register(CustomFormSet)
 
 
 @admin.register(Cart)
