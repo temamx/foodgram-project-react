@@ -1,5 +1,7 @@
 from django import forms
+
 from django.contrib import admin
+from django.forms import BaseInlineFormSet
 
 from recipes.models import (Favorite, Ingredient, Recipe,
                             AmountOfIngridients, Cart, Tag)
@@ -37,6 +39,25 @@ class TagInline(admin.TabularInline):
     model = Recipe.tags.through
 
 
+class IngredientsFormSet(BaseInlineFormSet):
+    def clean(self):
+        super.clean()
+
+        if any(self.errors):
+            return
+
+        ingredient_count = 0
+
+        for form in self.forms:
+            if form.cleaned_data and not form.cleaned_data.get('DELETE',
+                                                               False):
+                ingredient_count += 1
+            if ingredient_count < 1:
+                raise forms.ValidationError(
+                    'Добавьте хотя бы один ингредиент'
+                )
+
+
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'author', 'favorites_amount')
@@ -50,32 +71,6 @@ class RecipeAdmin(admin.ModelAdmin):
 
     def favorites_amount(self, obj):
         return obj.favorites.count()
-
-
-class CustomRecipeForm(forms.ModelForm):
-    class Meta:
-        model = Recipe
-        fields = '__all__'
-
-
-MyFormSet = forms.formset_factory(CustomRecipeForm)
-
-
-class CustomFormSet(MyFormSet):
-
-    def ingredients(self, obj):
-        return list(obj.ingredients.all())
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if self.ingredients() < 1:
-            raise forms.ValidationError(
-                'Нужно добавить хотя бы один ингредиент'
-            )
-        return cleaned_data
-
-
-admin.site.register(CustomFormSet)
 
 
 @admin.register(Cart)
