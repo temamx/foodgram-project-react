@@ -30,15 +30,6 @@ class IngredientAdmin(admin.ModelAdmin):
     empty_value_display = '-empty-'
 
 
-class RecipeIngredientInline(admin.TabularInline):
-    model = AmountOfIngridients
-    min_num = 1
-
-
-class TagInline(admin.TabularInline):
-    model = Recipe.tags.through
-
-
 class IngredientsFormSet(BaseInlineFormSet):
     def clean(self):
         super.clean()
@@ -56,6 +47,16 @@ class IngredientsFormSet(BaseInlineFormSet):
                 raise forms.ValidationError(
                     'Добавьте хотя бы один ингредиент'
                 )
+
+
+class RecipeIngredientInline(admin.TabularInline):
+    model = AmountOfIngridients
+    min_num = 1
+    formset = IngredientsFormSet
+
+
+class TagInline(admin.TabularInline):
+    model = Recipe.tags.through
 
 
 @admin.register(Recipe)
