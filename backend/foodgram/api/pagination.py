@@ -1,6 +1,6 @@
 from rest_framework.pagination import PageNumberPagination
 
-from foodgram.settings import MAX_PAGE_SIZE
+from django.conf import MAX_PAGE_SIZE
 
 
 class Pagination(PageNumberPagination):

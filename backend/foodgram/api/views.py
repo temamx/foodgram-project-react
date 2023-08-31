@@ -7,7 +7,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from users.models import Follow, User
 from api.filters import IngredientFilter, RecipeFilter
 from api.pagination import Pagination
 from api.permissions import IsAuthorOrReadOnly
@@ -19,6 +18,7 @@ from api.serializers import (
 from recipes.models import (
     AmountOfIngridients, Cart, Favorite, Ingredient, Recipe, Tag,
 )
+from users.models import Follow, User
 
 
 class CustomUserViewSet(UserViewSet):
