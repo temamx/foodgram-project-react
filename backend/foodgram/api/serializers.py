@@ -23,8 +23,10 @@ class IngredientRecipeSerializer(ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
         source='ingredient.id', read_only=True
     )
-    name = serializers.RelatedField(source='ingredient.name', read_only=True)
-    measurement_unit = serializers.RelatedField(
+    name = serializers.StringRelatedField(
+        source='ingredient.name', read_only=True
+    )
+    measurement_unit = serializers.StringRelatedField(
         source='ingredient.measurement_unit',
         read_only=True
     )
